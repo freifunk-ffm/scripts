@@ -107,8 +107,10 @@ do_it()
 
 createmail(){
 cat <<-EOF
-To: christof@christofschulze.com
-From: invity
+Return-Path: <invity@ffm.freifunk.net>
+To: user@wifi-frankfurt.de
+Content-Type: text/plain; charset=UTF-8
+From: invity@ffm.freifunk.net
 Subject: Terminerinnerung: $SUBJECT
 
 Das kommende Freifunk Event steht an:
@@ -137,7 +139,7 @@ TEMPFILE=$(mktemp /tmp/ical-vevents-parse.XXXXXXXXXX) || exit 1
 CALFILE=$(mktemp /tmp/ical-vevents-parse.XXXXXXXXXX) || exit 1
 trap "[ -f ${TEMPFILE} ] && rm ${TEMPFILE}; [ -f ${CALFILE} ] && rm ${CALFILE}" EXIT
 
-wget -q -O ${CALFILE} http://dl.ffm.freifunk.net/calendar.ics
+cp /var/lib/radicale/collections/public ${CALFILE}
 [[ $1 == "--printnext" ]] && printnext
 [[ $1 == "--reminder" ]] &&
 {
@@ -162,14 +164,14 @@ wget -q -O ${CALFILE} http://dl.ffm.freifunk.net/calendar.ics
   ntime=$(date +%s --date="$unixtime")
   # determine if reminder must be sent. This is based on two criteria:
   # * a reminder for this event has not been sent
-  # * the reminder is between 3 and 4 days in the future
+  # * the reminder is less than $2 days in the future
 
   mkdir -p /var/spool/invity
   [[ $((ntime - $2*24*3600)) -lt $curtime ]] &&
   {
   [[ ! -f /var/spool/invity/$uuid ]] &&
   {
-    createmail
+    createmail|/usr/sbin/sendmail -t
     date +%s > /var/spool/invity/$uuid 
   }
 }
