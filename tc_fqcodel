@@ -1,0 +1,86 @@
+#!/bin/sh
+set -ix
+## Paths and definitions
+tc=/usr/sbin/tc
+ext=$1		# Change for your device!
+ext_ingress=$4	# Use a unique ifb per rate limiter!
+# Set these as per your provider's settings, at 90% to start with
+ext_up=$2		# Max theoretical: for this example, up is 1024kbit => 100kbyte
+ext_down=$3	# Max theoretical: for this example, down is 8192kbit = 950 kbyte
+q=1514                  # HTB Quantum = 1500bytes IP + 14 bytes ethernet.
+# Higher bandwidths may require a higher htb quantum. MEASURE.
+# Some ADSL devices might require a stab setting.
+
+quantum=300		# fq_codel quantum 300 gives a boost to interactive flows
+# At higher bandwidths (50Mbit+) don't bother
+MODULES="ifb sch_htb sch_ingress sch_fq_codel cls_flow cls_u32 act_mirred"
+for i in $MODULES
+do
+  lsmod |grep -q $i || insmod $i
+done
+
+
+ethtool -K $ext tso off gso off gro off # Also turn of gro on ALL interfaces 
+ifconfig $ext txqueuelen 1000
+# e.g ethtool -K eth1 gro off if you have eth1
+# some devices you may need to run these 
+# commands independently
+
+# Clear old queuing disciplines (qdisc) on the interfaces
+$tc qdisc del dev $ext root
+$tc qdisc del dev $ext ingress
+$tc qdisc del dev $ext_ingress root
+$tc qdisc del dev $ext_ingress ingress
+#########
+# INGRESS
+#########
+
+# Create ingress on external interface
+$tc qdisc add dev $ext handle ffff: ingress
+
+ifconfig $ext_ingress up # if the interace is not up bad things happen
+
+# Forward all ingress traffic to the IFB device
+$tc filter add dev $ext parent ffff: protocol all u32 match u32 0 0 action mirred egress redirect dev $ext_ingress
+
+# Create an EGRESS filter on the IFB device
+$tc qdisc add dev $ext_ingress root handle 1: htb default 11
+
+# Add root class HTB with rate limiting
+
+$tc class add dev $ext_ingress parent 1: classid 1:1 htb rate ${ext_down}kbps
+$tc class add dev $ext_ingress parent 1:1 classid 1:11 htb rate ${ext_down}kbps prio 0 quantum $q
+$tc class add dev $ext_ingress parent 1:1 classid 1:12 htb rate ${ext_down}kbps prio 0 quantum $q
+
+
+# Add FQ_CODEL qdisc with ECN support (if you want ecn)
+$tc qdisc add dev $ext_ingress parent 1:11 fq_codel quantum $quantum ecn
+$tc qdisc add dev $ext_ingress parent 1:12 fq_codel quantum $quantum ecn
+
+#########
+# EGRESS
+#########
+# Add FQ_CODEL to EGRESS on external interface
+$tc qdisc add dev $ext root handle 1: htb default 11
+
+# Add root class HTB with rate limiting
+$tc class add dev $ext parent 1: classid 1:1 htb rate ${ext_up}kbps
+$tc class add dev $ext parent 1:1 classid 1:11 htb rate $((${ext_up} * 10 / 3))kbps ceil $((${ext_up} * 10 / 6))kbps prio 0 quantum $q prio 0
+$tc class add dev $ext parent 1:1 classid 1:12 htb rate $((ext_up*10/7))kbps ceil ${ext_up}kbps prio 0 quantum $q prio 1
+
+# Note: You can apply a packet limit here and on ingress if you are memory constrained - e.g
+# for low bandwidths and machines with < 64MB of ram, limit 1000 is good, otherwise no point
+
+# Add FQ_CODEL qdisc without ECN support - on egress it's generally better to just drop the packet
+# but feel free to enable it if you want.
+
+$tc qdisc add dev $ext parent 1:11 fq_codel quantum $quantum noecn
+$tc qdisc add dev $ext parent 1:12 fq_codel quantum $quantum noecn
+
+iptables -t mangle -A POSTROUTING  --src 192.168.1.2 -j CLASSIFY --set-class 1:12                  
+iptables -t mangle -A POSTROUTING  --src 192.168.1.3 -j CLASSIFY --set-class 1:12                  
+              
+
+# filter for low prio traffic
+#$tc filter add dev $ext parent 1:12 prio 1 protocol ip u32 match ip src 192.168.1.2 flowid 1:12
+#$tc filter add dev $ext parent 1:12 prio 1 protocol ip u32 match ip src 192.168.1.3 flowid 1:12
