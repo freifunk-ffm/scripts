@@ -143,10 +143,11 @@ cp /var/lib/radicale/collections/public ${CALFILE}
 [[ $1 == "--printnext" ]] && printnext
 [[ $1 == "--reminder" ]] &&
 {
- [[ $# -lt 2 ]] && {
- echo "SYNOPSIS: $0 --reminder DAYS"
- exit 1
- }
+  [[ $# -lt 2 ]] && 
+  {
+    echo "SYNOPSIS: $0 --reminder DAYS"
+    exit 1
+  }
   while read line
   do
     case $line in
@@ -162,20 +163,19 @@ cp /var/lib/radicale/collections/public ${CALFILE}
 
   unixtime=${DSTART/,/}
   ntime=$(date +%s --date="$unixtime")
-  # determine if reminder must be sent. This is based on two criteria:
-  # * a reminder for this event has not been sent
-  # * the reminder is less than $2 days in the future
+# determine if reminder must be sent. This is based on two criteria:
+# * a reminder for this event has not been sent
+# * the reminder is less than $2 days in the future
 
   mkdir -p /var/spool/invity
   [[ $((ntime - $2*24*3600)) -lt $curtime ]] &&
   {
-  [[ ! -f /var/spool/invity/$uuid ]] &&
-  {
-    createmail|/usr/sbin/sendmail -t
+    [[ ! -f /var/spool/invity/$uuid ]] &&
+    {
+      createmail|/usr/sbin/sendmail -t
     date +%s > /var/spool/invity/$uuid 
+    }
   }
-}
-
 }
 exit 0
 
