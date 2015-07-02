@@ -1,0 +1,36 @@
+#!/bin/bash
+fastd=/usr/local/bin/fastd
+instance=$1
+config=/etc/fastd/$instance/fastd.conf
+out=/tmp/fastd.out
+upwait=8
+downwait=1
+
+if [ -z "$instance" ]
+then
+  echo "Usage: $0 <instance-name>"
+  exit 2
+fi
+
+killall fastd 2>/dev/null
+$fastd -c $config 2>$out &
+sleep $upwait
+killall fastd 2>/dev/null
+sleep $downwait
+#cat $out
+established=$(cat $out | grep " established" | wc -l)
+if [ $established == 1 ]
+then
+  line=$(cat $out | grep " established")
+  line=$(echo $line | awk -F"--- " '{print $2'})
+  echo "OK - $line"	
+  exit 0
+fi
+line=$(cat $out | grep -v "starting" | grep -v "terminating" | grep -v "bound" | awk -F"--- " '{print $2}' | sed -e 's/\\n/ /g' | sed -e 's/Info: //g' )
+if [ -z $line ]
+then
+  line="No establish confirmation for $instance"
+fi
+echo "CRITICAL - $line"
+exit 2
+
