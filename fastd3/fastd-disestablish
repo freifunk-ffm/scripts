@@ -1,0 +1,5 @@
+#!/bin/bash
+source $(pwd)/env
+echo $BATIF
+/sbin/dhclient -r -v $BATIF
+

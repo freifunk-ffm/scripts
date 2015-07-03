@@ -1,0 +1,17 @@
+
+fastdname=$(basename $PWD)
+
+
+fastdserver=${fastdname#fastd}
+
+if [[ fastdserver -eq 1 ]]
+then
+	lastoctett=3
+else
+	lastoctett=1
+fi
+FASTDIP=10.126.$((fastdserver*8-8)).$lastoctett
+
+FIF=$(grep interface fastd.conf|cut -d\" -f2|grep -v \#)
+BATIF=bat${fastdserver}
+

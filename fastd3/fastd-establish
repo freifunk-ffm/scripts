@@ -1,10 +1,6 @@
-#!/bin/sh
-fastdserver=3
-FASTDIP=10.126.16.1
-
-FIF=vpn-f${fastdserver}
-BATIF=bat${fastdserver}
-
+#!/bin/bash
+source $(pwd)/env
+echo $BATIF $FIF $FASTDIP
 /sbin/dhclient -sf /root/scripts/dhclient-script-nogw  -v $BATIF
 /sbin/ip route del 10.126.0.0/16 dev $BATIF
 /sbin/ip route add $FASTDIP/32 dev $BATIF
