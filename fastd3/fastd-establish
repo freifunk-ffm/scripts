@@ -1,0 +1,19 @@
+#!/bin/sh
+fastdserver=3
+FASTDIP=10.126.16.1
+
+FIF=vpn-f${fastdserver}
+BATIF=bat${fastdserver}
+
+/sbin/dhclient -sf /root/scripts/dhclient-script-nogw  -v $BATIF
+/sbin/ip route del 10.126.0.0/16 dev $BATIF
+/sbin/ip route add $FASTDIP/32 dev $BATIF
+
+
+#/sbin/ip route add 10.126.0.0/16 dev batbridge table ffffm
+
+#add route to icvpn - all other freifunk networks
+#/sbin/ip route add 10.0.0.0/8 via 10.126.255.11 dev batbridge table ffffm
+
+/sbin/ip route flush cache
+

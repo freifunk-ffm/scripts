@@ -1,0 +1,18 @@
+#!/bin/sh
+#killall alfred 2>/dev/null
+#killall batadv-vis 2>/dev/null
+
+fastdserver=3
+FASTDIP=10.126.16.1
+
+FIF=vpn-f${fastdserver}
+BATIF=bat${fastdserver}
+
+/sbin/ifconfig $FIF hw ether 02:ff:0f:$(printf %02d ${fastdserver}):7d:12 up
+/sbin/ip link set dev $FIF up
+/sbin/ip link set dev $BATIF up
+
+/usr/sbin/batctl -m $BATIF if add $FIF
+/usr/sbin/batctl -m $BATIF it 5000
+/sbin/ifconfig $BATIF up
+/sbin/ifconfig $FIF up
