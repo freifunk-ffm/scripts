@@ -1,0 +1,44 @@
+#!/bin/bash
+set -ix
+
+BRANCH=$1 # ffmdev, ffmstable, ffmtest...
+IMAGETYPE=${2:-factory} #sysupgrade, factory
+
+runonserver ()
+{
+	ssh -p 2204 -C ffmfiles@jenkins.ffm.freifunk.net "$@"
+}
+
+firmwareget()
+{
+	rm -f /var/www/jenkins_files/ffm/firmware/${BRANCH//ffm}/${IMAGETYPE}/*
+	scp -P 2204 "ffmfiles@jenkins.ffm.freifunk.net:/var/www/jenkins_files/ffm/firmware/${BRANCH//ffm}/${IMAGETYPE}/*${rver}*" /var/www/files/firmware/${BRANCH//ffm}/${IMAGETYPE}/
+	[[ $IMAGETYPE != "factory" ]] && scp -P 2204 "ffmfiles@jenkins.ffm.freifunk.net:/var/www/jenkins_files/ffm/firmware/${BRANCH//ffm}/${IMAGETYPE}/*manifest" /var/www/files/firmware/${BRANCH//ffm}/${IMAGETYPE}/
+}
+
+
+# determine current version of the branch
+cver=$(ls /var/www/files/firmware/${BRANCH//ffm}/${IMAGETYPE}/|awk -F"${BRANCH}-" '{print $2}'|grep tp-link|awk -F '-tp-link' '{print $1}'|sort -u -t.  -k1,1n -k 2,2n|tail -n1)
+
+rver=$(runonserver "ls /var/www/jenkins_files/ffm/firmware/${BRANCH//ffm}/${IMAGETYPE}"|awk -F"${BRANCH}-" '{print $2}'|grep tp-link|awk -F '-tp-link' '{print $1}'|sort -u -t.  -k1,1n -k 2,2n|tail -n1)
+
+if [[ -z $cver ]]
+then
+firmwareget
+exit 0
+fi
+
+if [[ ${cver%.*} -le ${rver%.*} ]]
+then
+	if [[ ${cver%.*} -eq ${rver%.*} ]]
+	then
+		if [[ ${cver#*.} -lt ${rver#*.} ]]
+		then
+			# download new version
+			firmwareget
+		fi
+	else
+	# download new version
+	firmwareget
+	fi
+fi
