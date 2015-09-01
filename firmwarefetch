@@ -1,8 +1,9 @@
 #!/bin/bash
-set -ix
+#set -ix
 
 BRANCH=$1 # ffmdev, ffmstable, ffmtest...
 IMAGETYPE=${2:-factory} #sysupgrade, factory
+KEEPVERS=${3:-3} # keep last 3 versions, remove older ones
 
 runonserver ()
 {
@@ -42,3 +43,20 @@ then
 	firmwareget
 	fi
 fi
+
+# TODO nur die letzten $KEEPVERS-Version behalten
+kvers=( $(ls /var/www/files/firmware/${BRANCH//ffm}/${IMAGETYPE}/|awk -F"${BRANCH}-" '{print $2}'|grep tp-link|awk -F '-tp-link' '{print $1}'|sort -u -t.  -k1,1n -k 2,2n|tail -n$KEEPVERS) )
+
+for img in /var/www/files/firmware/${BRANCH//ffm}/${IMAGETYPE}/*.bin
+do
+	match=0
+	for i in ${kvers[@]}
+	do
+		echo "$img" | grep -q ${i##*/} && match=1
+	done
+	if [[ $match -eq 0 ]]
+	then
+		rm "$img"
+	fi
+done
+
