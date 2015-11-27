@@ -11,7 +11,7 @@ getdata() {
   temp=$(/usr/bin/wget -q -O - "$URL")
   totalnodes=$(echo $temp|/bin/grep -P -o "name.*?}"|/usr/bin/wc -l)
   #onlinenodes=$(echo $temp|/bin/grep -P -o "name.*?}" |/bin/grep -c "online\": true")
-  onlinenodes=$(echo $temp|/bin/grep -P -o "online\": true" |wc -l)
+  onlinenodes=$(echo $temp|/bin/grep -P -o "online\": *true" |wc -l)
   #clients=$(echo $temp|/bin/grep -P -o "name.*?}.*?}" |/bin/grep -o -P "clientcount\": [0-9]+"|/usr/bin/awk '{sum=sum+$2} END {print sum}')
   clients=$(echo $temp|/bin/grep -P -o "client.........."|cut -d: -f2|cut -d, -f1|awk '{sum = sum + $1} END {print sum}')
   #  echo totalnodes: $totalnodes
@@ -21,7 +21,7 @@ getdata() {
   echo "PUTVAL \"$HOSTNAME/exec-Freifunk_Frankfurt/gauge-Total_Nodes\" interval=$INTERVAL N:$totalnodes"
   echo "PUTVAL \"$HOSTNAME/exec-Freifunk_Frankfurt/gauge-Online_Nodes\" interval=$INTERVAL N:$onlinenodes"
   echo "PUTVAL \"$HOSTNAME/exec-Freifunk_Frankfurt/gauge-Online_Clients\" interval=$INTERVAL N:$clients"
-
+echo "PUTVAL \"$HOSTNAME/exec-Freifunk_Frankfurt_Clients/gauge-Online_Clients\" interval=$INTERVAL N:$clients"
 #  fastdnodes=$(echo $temp|grep -o -P "name\": \"fastd.*?gateway\": true.*?}.*?}")
 #  IFS="
 #"
