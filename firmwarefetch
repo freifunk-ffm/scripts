@@ -1,62 +1,110 @@
 #!/bin/bash
-#set -ix
 
-BRANCH=$1 # ffmdev, ffmstable, ffmtest...
-IMAGETYPE=${2:-factory} #sysupgrade, factory
-KEEPVERS=${3:-3} # keep last 3 versions, remove older ones
+if [ -z "$1" ] ;  then
+        echo "Bitte einen Branch (stable, test, dev) angeben:"
+        echo
+        exit 1
+fi
 
-runonserver ()
+# BRANCH=${1:-dev} # dev, stable, test...
+
+
+#####################################
+# Lokalisierungen ab hier
+#####################################
+#
+# Haupt-Link auf Remote-Verzeichnis mit neuen *.tar.gz Firmware-Dateien?
+REMOTEPATH="https://jenkins.ffm.freifunk.net/jenkins/job/ffm_gluon-${BRANCH}/ws/output/images"
+#
+# Haupt-Link auf Remote-Verzeichnis, in der sich die Datei der Firmware-Versionsinformation befindet?
+REMOTEVERSIONINFOPATH="https://jenkins.ffm.freifunk.net/jenkins/job/ffm_gluon-${BRANCH}/ws/output/images"
+#
+# Wie lautet der Dateiname der Firmware-Versionsinformation
+VERSIONINFOFILENAME="version"
+#
+# Haupt-Pfad zum lokalen Firmware-Ablageordner
+LOCALMAINPATH="/var/www/files/firmware"
+#
+#####################################
+# Bitte ab hier nichts mehr aendern
+#####################################
+
+
+LOCALBRANCHPATH="${LOCALMAINPATH}/${BRANCH}"
+
+CurrentVersion=""
+NewVersion=""
+
+ErrorCheck()
 {
-	ssh -p 2204 -C ffmfiles@jenkins.ffm.freifunk.net "$@"
+if [[ $1 -ne 0 ]] ; then
+ echo
+ echo "Firmwarefetch Error: "$2
+ echo
+ # Skript-Abbruch
+ exit 1
+fi
 }
 
-firmwareget()
+
+GetNewVersionInfo()
 {
-	rm -f /var/www/jenkins_files/ffm/firmware/${BRANCH//ffm}/${IMAGETYPE}/*
-	scp -P 2204 "ffmfiles@jenkins.ffm.freifunk.net:/var/www/jenkins_files/ffm/firmware/${BRANCH//ffm}/${IMAGETYPE}/*${rver}*" /var/www/files/firmware/${BRANCH//ffm}/${IMAGETYPE}/
-	[[ $IMAGETYPE != "factory" ]] && scp -P 2204 "ffmfiles@jenkins.ffm.freifunk.net:/var/www/jenkins_files/ffm/firmware/${BRANCH//ffm}/${IMAGETYPE}/*manifest" /var/www/files/firmware/${BRANCH//ffm}/${IMAGETYPE}/
+echo "Firmwarefetch: GetNewVersionInfo..."
+NewVersion=$(wget --no-check-certificate -O - $REMOTEVERSIONINFOPATH/$VERSIONINFOFILENAME)
+ErrorCheck $? "No remote firmware version information found!"
 }
 
+GetCurrentVersionInfo()
+{
+echo "Firmwarefetch: GetCurrentVersionInfo..."
+CurrentVersion=$(cat $LOCALBRANCHPATH/$VERSIONINFOFILENAME)
+if [[ $? -ne 0 ]]; then
+ CurrentVersion="unknown_at_"$(date +%Y-%m-%d_%H:%M)
+fi
+}
 
-# determine current version of the branch
-cver=$(ls /var/www/files/firmware/${BRANCH//ffm}/${IMAGETYPE}/|awk -F"${BRANCH}-" '{print $2}'|grep tp-link|awk -F '-tp-link' '{print $1}'|sort -u -t.  -k1,1n -k 2,2n|tail -n1)
+BackupCurrentFirmware()
+{
+echo "Firmwarefetch: BackupCurrentFirmware..."
+# Neues Backupverzeichnisse anlegen
+mkdir -p  $LOCALBRANCHPATH/factory/$CurrentVersion
+mkdir -p  $LOCALBRANCHPATH/sysupgrade/$CurrentVersion
+mkdir -p  $LOCALBRANCHPATH/sysupgrade/$CurrentVersion/modules
 
-rver=$(runonserver "ls /var/www/jenkins_files/ffm/firmware/${BRANCH//ffm}/${IMAGETYPE}"|awk -F"${BRANCH}-" '{print $2}'|grep tp-link|awk -F '-tp-link' '{print $1}'|sort -u -t.  -k1,1n -k 2,2n|tail -n1)
+# Alle alten Binaries verschieben
+mv $LOCALBRANCHPATH/factory/gluon-ffffm-* $LOCALBRANCHPATH/factory/$CurrentVersion
+mv $LOCALBRANCHPATH/sysupgrade/*.manifest $LOCALBRANCHPATH/sysupgrade/$CurrentVersion
+mv $LOCALBRANCHPATH/sysupgrade/gluon-ffffm-* $LOCALBRANCHPATH/sysupgrade/$CurrentVersion
+#mv $LOCALBRANCHPATH/sysupgrade/modules $LOCALBRANCHPATH/sysupgrade/$CurrentVersion
+cp -rf $LOCALBRANCHPATH/sysupgrade/modules/gluon-ffffm-$CurrentVersion $LOCALBRANCHPATH/sysupgrade/$CurrentVersion/modules
 
-if [[ -z $cver ]]
-then
-firmwareget
+# Alte Hash- und Info-Files in 'factory' verschieben
+mv $LOCALBRANCHPATH/MD5* $LOCALBRANCHPATH/factory/$CurrentVersion
+mv $LOCALBRANCHPATH/SHA256* $LOCALBRANCHPATH/factory/$CurrentVersion
+mv $LOCALBRANCHPATH/ecdsa-key* $LOCALBRANCHPATH/factory/$CurrentVersion
+mv $LOCALBRANCHPATH/$VERSIONINFOFILENAME $LOCALBRANCHPATH/factory/$CurrentVersion
+}
+
+GetNewFirmware()
+{
+echo "Firmwarefetch: GetNewFirmware..."
+wget --no-check-certificate -O - $REMOTEPATH/gluon-ffffm-$NewVersion.tar.gz | tar xvz -C $LOCALBRANCHPATH
+ErrorCheck $? "Can't download remote firmware archiv!"
+}
+
+# Los geht's !
+
+GetNewVersionInfo
+GetCurrentVersionInfo
+echo "Firmwarefetch: Current firmware version: "$CurrentVersion
+if [[ $CurrentVersion < $NewVersion ]]; then
+  echo "Firmwarefetch: New firmware version: "$NewVersion
+  BackupCurrentFirmware
+  GetNewFirmware
+else
+  echo "Firmwarefetch: No new Firmwareversion found"
+fi
+
+echo "Firmwarefetch: Done!"
+
 exit 0
-fi
-
-if [[ ${cver%.*} -le ${rver%.*} ]]
-then
-	if [[ ${cver%.*} -eq ${rver%.*} ]]
-	then
-		if [[ ${cver#*.} -lt ${rver#*.} ]]
-		then
-			# download new version
-			firmwareget
-		fi
-	else
-	# download new version
-	firmwareget
-	fi
-fi
-
-# TODO nur die letzten $KEEPVERS-Version behalten
-kvers=( $(ls /var/www/files/firmware/${BRANCH//ffm}/${IMAGETYPE}/|awk -F"${BRANCH}-" '{print $2}'|grep tp-link|awk -F '-tp-link' '{print $1}'|sort -u -t.  -k1,1n -k 2,2n|tail -n$KEEPVERS) )
-
-for img in /var/www/files/firmware/${BRANCH//ffm}/${IMAGETYPE}/*.bin
-do
-	match=0
-	for i in ${kvers[@]}
-	do
-		echo "$img" | grep -q ${i##*/} && match=1
-	done
-	if [[ $match -eq 0 ]]
-	then
-		rm "$img"
-	fi
-done
-
