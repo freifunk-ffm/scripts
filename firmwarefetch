@@ -6,7 +6,7 @@ if [ -z "$1" ] ;  then
         exit 1
 fi
 
-# BRANCH=${1:-dev} # dev, stable, test...
+BRANCH=${1} # dev, stable, test...
 
 
 #####################################
