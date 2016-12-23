@@ -14,10 +14,10 @@ BRANCH=${1} # dev, stable, test...
 #####################################
 #
 # Haupt-Link auf Remote-Verzeichnis mit neuen *.tar.gz Firmware-Dateien?
-REMOTEPATH="https://jenkins.ffm.freifunk.net/jenkins/job/ffm_gluon-${BRANCH}/ws/output/images"
+REMOTEPATH="http://jenkins.ffm.freifunk.net/jenkins/job/ffm_gluon-${BRANCH}/ws/workspace-frb/output/images"
 #
 # Haupt-Link auf Remote-Verzeichnis, in der sich die Datei der Firmware-Versionsinformation befindet?
-REMOTEVERSIONINFOPATH="https://jenkins.ffm.freifunk.net/jenkins/job/ffm_gluon-${BRANCH}/ws/output/images"
+REMOTEVERSIONINFOPATH="http://jenkins.ffm.freifunk.net/jenkins/job/ffm_gluon-${BRANCH}/ws/workspace-frb/output/images"
 #
 # Wie lautet der Dateiname der Firmware-Versionsinformation
 VERSIONINFOFILENAME="version"
