@@ -90,7 +90,7 @@ mv $LOCALBRANCHPATH/$VERSIONINFOFILENAME $LOCALBRANCHPATH/factory/$CurrentVersio
 GetNewFirmware()
 {
 echo "Firmwarefetch: GetNewFirmware..."
-wget --no-check-certificate -O - $REMOTEPATH/gluon-ffffm-$NewVersion.tar.gz | tar xvz -C $LOCALBRANCHPATH
+wget --no-check-certificate -O - $REMOTEPATH/gluon-ffffm-$NewVersion.tar.xz | tar xvj -C $LOCALBRANCHPATH
 ErrorCheck $? "Can't download remote firmware archiv!"
 }
 
