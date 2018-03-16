@@ -15,7 +15,8 @@ BRANCH=${1} # dev, stable, test...
 
 # Haupt-Link auf Remote-Verzeichnis mit neuer *.tar.gz Firmware-Datei?
 #REMOTEPATH="http://jenkins.ffm.freifunk.net/jenkins/job/ffm_gluon-${BRANCH}/ws/wspace/output/images/"
-REMOTEPATH="http://dl.ffm.freifunk.net/FW-Archiv/"
+#REMOTEPATH="http://dl.ffm.freifunk.net/FW-Archiv/"
+REMOTEPATH="https://ffffmjenkins.ffdus.de/job/${BRANCH}/ws/wspace/output/images/"
 
 # Haupt-Link auf Remote-Verzeichnis, in der sich die Datei der Firmware-Versionsinformation befindet?
 #REMOTEVERSIONINFOPATH="http://jenkins.ffm.freifunk.net/jenkins/job/ffm_gluon-${BRANCH}/ws/wspace/output/images/"
