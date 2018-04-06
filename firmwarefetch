@@ -13,19 +13,19 @@ BRANCH=${1} # dev, stable, test...
 # Lokalisierungen ab hier
 #####################################
 
-### Begin - lokaler Babelhack
+### BEGIN - lokaler Babelhack
 if [ "$2" ] ;  then
    DL_PATH_PART=${2}
 else
    DL_PATH_PART=${1}
 fi
-### END - lokaler Babelhack
+### ENDE - lokaler Babelhack
 
-# Haupt-Link auf Remote-Verzeichnis mit neuer *.tar.xz Firmware-Datei?
+# Haupt-Link auf Remote-Verzeichnis mit neuer *.tar.xz Firmware-Datei.
 REMOTEPATH="https://ffffmjenkins.ffdus.de/job/${DL_PATH_PART}/ws/wspace/output/images/"
 # Babelhack                                     ^^^
 
-# Haupt-Link auf Remote-Verzeichnis, in der sich die Datei der Firmware-Versionsinformation befindet?
+# Haupt-Link auf Remote-Verzeichnis, in der sich die Datei der Firmware-Versionsinformation befindet.
 REMOTEVERSIONINFOPATH=${REMOTEPATH}
 
 # Wie lautet der Dateiname der Firmware-Versionsinformation
