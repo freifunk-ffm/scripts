@@ -1,8 +1,9 @@
 #!/bin/bash
 
 if [ -z "$1" ] ;  then
-        echo "Bitte einen FW-Branch (stable, test, dev, babel-dev) angeben:"
-        echo
+        echo "Bitte den Verzeichnisnamen des lokalen Ablageortes (stable, test, dev, babel-dev) angeben."
+        echo "Hiermit wird der Haupt-Pfad zum lokalen Firmware-Ablageordner erstellt." 
+        echo 
         exit 1
 fi
 
@@ -13,13 +14,20 @@ BRANCH=${1} # dev, stable, test...
 # Lokalisierungen ab hier
 #####################################
 
-### BEGIN - lokaler Babelhack
+### 
+# Da der Ablageordner nicht immer identisch zum Fetch-Link ist,
+# wird hier die Möglichkeit geschaffen, einen unabhängigen Fetch-Teil-Pfad anzugeben.
+# Wird die Firmware z.B. durch Jenkins gebaut, so muss der zweite Parameter dann 
+# der Name des Jenkins-Projektes sein.
+#
+# BEGIN - Zweitparameteranalyse
 if [ "$2" ] ;  then
    DL_PATH_PART=${2}
 else
    DL_PATH_PART=${1}
 fi
-### ENDE - lokaler Babelhack
+# ENDE - Zweitparameteranalyse
+###
 
 # Haupt-Link auf Remote-Verzeichnis mit neuer *.tar.xz Firmware-Datei.
 REMOTEPATH="https://ffffmjenkins.ffdus.de/job/${DL_PATH_PART}/ws/wspace/output/images/"
