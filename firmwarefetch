@@ -102,6 +102,20 @@ mv $LOCALBRANCHPATH/ecdsa-key* $LOCALBRANCHPATH/factory/$CurrentVersion
 mv $LOCALBRANCHPATH/$VERSIONINFOFILENAME $LOCALBRANCHPATH/factory/$CurrentVersion
 }
 
+RemoveOlderBackups()
+{
+BACKUP_KEEP_COUNTER=5
+echo "Firmwarefetch: Keep the last $BACKUP_KEEP_COUNTER backups..."
+find $LOCALBRANCHPATH/factory -type d -name "v*" -printf "%T@ %Tc %p\n" | sort -n|rev |cut -d" " -f1|rev|head -n -$BACKUP_KEEP_COUNTER|xargs rm -rf
+ErrorCheck $? "Something went wrong during keeping the factory backups!"
+
+find $LOCALBRANCHPATH/sysupgrade -type d -name "v*" -printf "%T@ %Tc %p\n" | sort -n|rev |cut -d" " -f1|rev|head -n -$BACKUP_KEEP_COUNTER|xargs rm -rf
+ErrorCheck $? "Something went wrong during keeping the sysupgrade backups!"
+
+find $LOCALBRANCHPATH/sysupgrade/modules -type d -name "gluon-*" -printf "%T@ %Tc %p\n" | sort -n|rev |cut -d" " -f1|rev|head -n -$BACKUP_KEEP_COUNTER|xargs rm -rf
+ErrorCheck $? "Something went wrong during keeping the module backups!"
+}
+
 GetNewFirmware()
 {
 echo "Firmwarefetch: GetNewFirmware..."
@@ -117,6 +131,7 @@ echo "Firmwarefetch: Current firmware version: "$CurrentVersion
 if [[ $CurrentVersion < $NewVersion ]]; then
   echo "Firmwarefetch: New firmware version: "$NewVersion
   BackupCurrentFirmware
+  RemoveOlderBackups
   GetNewFirmware
 else
   echo "Firmwarefetch: No new Firmwareversion found"
