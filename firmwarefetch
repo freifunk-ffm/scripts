@@ -42,6 +42,9 @@ VERSIONINFOFILENAME="version"
 # Haupt-Pfad zum lokalen Firmware-Ablageordner
 LOCALMAINPATH="/var/www/files/firmware"
 
+# Wieviele archivierte alte Versionen sollen vorgehalten bleiben?
+BACKUP_KEEP_COUNTER=7
+
 #####################################
 # Bitte ab hier nichts mehr aendern
 #####################################
@@ -85,14 +88,17 @@ BackupCurrentFirmware()
 echo "Firmwarefetch: BackupCurrentFirmware..."
 # Neues Backupverzeichnisse anlegen
 mkdir -p  $LOCALBRANCHPATH/factory/$CurrentVersion
+mkdir -p  $LOCALBRANCHPATH/other/$CurrentVersion
 mkdir -p  $LOCALBRANCHPATH/sysupgrade/$CurrentVersion
 mkdir -p  $LOCALBRANCHPATH/sysupgrade/$CurrentVersion/modules
 
 # Alle alten Binaries verschieben
 mv $LOCALBRANCHPATH/factory/gluon-ffffm-* $LOCALBRANCHPATH/factory/$CurrentVersion
+mv $LOCALBRANCHPATH/other/gluon-ffffm-* $LOCALBRANCHPATH/other/$CurrentVersion
 mv $LOCALBRANCHPATH/sysupgrade/*.manifest $LOCALBRANCHPATH/sysupgrade/$CurrentVersion
 mv $LOCALBRANCHPATH/sysupgrade/gluon-ffffm-* $LOCALBRANCHPATH/sysupgrade/$CurrentVersion
-#mv $LOCALBRANCHPATH/sysupgrade/modules $LOCALBRANCHPATH/sysupgrade/$CurrentVersion
+# Wenn noch alte FW im Feld läuft, werden die Module an aktuller stelle noch benötigt. 
+# Daher werden die aktuellen Module nur weg kopiert, und nicht komplett verschoben.
 cp -rf $LOCALBRANCHPATH/sysupgrade/modules/gluon-ffffm-$CurrentVersion $LOCALBRANCHPATH/sysupgrade/$CurrentVersion/modules
 
 # Alte Hash- und Info-Files in 'factory' verschieben
@@ -104,10 +110,12 @@ mv $LOCALBRANCHPATH/$VERSIONINFOFILENAME $LOCALBRANCHPATH/factory/$CurrentVersio
 
 RemoveOlderBackups()
 {
-BACKUP_KEEP_COUNTER=5
 echo "Firmwarefetch: Keep the last $BACKUP_KEEP_COUNTER backups..."
 find $LOCALBRANCHPATH/factory -type d -name "v*" -printf "%T@ %Tc %p\n" | sort -n|rev |cut -d" " -f1|rev|head -n -$BACKUP_KEEP_COUNTER|xargs rm -rf
 ErrorCheck $? "Something went wrong during keeping the factory backups!"
+
+find $LOCALBRANCHPATH/other -type d -name "v*" -printf "%T@ %Tc %p\n" | sort -n|rev |cut -d" " -f1|rev|head -n -$BACKUP_KEEP_COUNTER|xargs rm -rf
+ErrorCheck $? "Something went wrong during keeping the other backups!"
 
 find $LOCALBRANCHPATH/sysupgrade -type d -name "v*" -printf "%T@ %Tc %p\n" | sort -n|rev |cut -d" " -f1|rev|head -n -$BACKUP_KEEP_COUNTER|xargs rm -rf
 ErrorCheck $? "Something went wrong during keeping the sysupgrade backups!"
