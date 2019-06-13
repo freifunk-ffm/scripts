@@ -43,7 +43,7 @@ VERSIONINFOFILENAME="version"
 LOCALMAINPATH="/var/www/files/firmware"
 
 # Wieviele archivierte alte Versionen sollen vorgehalten bleiben?
-BACKUP_KEEP_COUNTER=7
+BACKUP_KEEP_COUNTER=10
 
 #####################################
 # Bitte ab hier nichts mehr aendern
