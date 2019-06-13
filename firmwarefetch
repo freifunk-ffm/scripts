@@ -30,7 +30,7 @@ fi
 ###
 
 # Haupt-Link auf Remote-Verzeichnis mit neuer *.tar.xz Firmware-Datei.
-REMOTEPATH="https://2.dl.ffm.freifunk.net/FW-Archiv/ffffm-$1/"
+REMOTEPATH="https://2.dl.ffm.freifunk.net/FW-Archiv/ffffm-$DL_PATH_PART/"
 # Babelhack                                     ^^^
 
 # Haupt-Link auf Remote-Verzeichnis, in der sich die Datei der Firmware-Versionsinformation befindet.
