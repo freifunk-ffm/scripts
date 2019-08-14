@@ -2,7 +2,7 @@
 
 if [ -z "$1" ] ;  then
         echo "Bitte den Verzeichnisnamen des lokalen Ablageortes (stable, test, dev, babel-dev) angeben."
-        echo "Hiermit wird der Haupt-Pfad zum lokalen Firmware-Ablageordner erstellt." 
+        echo "Hiermit wird der Haupt-Pfad zum lokalen Firmware-Ablageordner vervollständigt." 
         echo 
         exit 1
 fi
@@ -15,9 +15,9 @@ BRANCH=${1} # dev, stable, test...
 #####################################
 
 ### 
-# Da der Ablageordner nicht immer identisch zum Fetch-Link ist,
+# Da der Ablageordner nicht immer identisch zum Fetch- bzw. Download-Link ist,
 # wird hier die Möglichkeit geschaffen, einen unabhängigen Fetch-Teil-Pfad anzugeben.
-# Wird die Firmware z.B. durch Jenkins gebaut, so muss der zweite Parameter dann 
+# Wird die Firmware z.B. durch Jenkins gebaut, so könnte dann der optionale zweite Parameter
 # der Name des Jenkins-Projektes sein.
 #
 # BEGIN - Zweitparameteranalyse
