@@ -102,7 +102,7 @@ mv $LOCALBRANCHPATH/sysupgrade/gluon-ffffm-* $LOCALBRANCHPATH/sysupgrade/$Curren
 cp -rf $LOCALBRANCHPATH/sysupgrade/modules/gluon-ffffm-$CurrentVersion $LOCALBRANCHPATH/sysupgrade/$CurrentVersion/modules
 
 # Alte Hash- und Info-Files in 'factory' verschieben
-mv $LOCALBRANCHPATH/MD5* $LOCALBRANCHPATH/factory/$CurrentVersion
+mv $LOCALBRANCHPATH/SHA512* $LOCALBRANCHPATH/factory/$CurrentVersion
 mv $LOCALBRANCHPATH/SHA256* $LOCALBRANCHPATH/factory/$CurrentVersion
 mv $LOCALBRANCHPATH/ecdsa-key* $LOCALBRANCHPATH/factory/$CurrentVersion
 mv $LOCALBRANCHPATH/$VERSIONINFOFILENAME $LOCALBRANCHPATH/factory/$CurrentVersion
