@@ -136,13 +136,16 @@ ErrorCheck $? "Can't download remote firmware archiv!"
 GetNewVersionInfo
 GetCurrentVersionInfo
 echo "Firmwarefetch: Current firmware version: "$CurrentVersion
-if [[ $CurrentVersion < $NewVersion ]]; then
-  echo "Firmwarefetch: New firmware version: "$NewVersion
+
+HIGHESTVERSION=$(printf '%s\n' $CurrentVersion $NewVersion | sort -V | tail -n 1)
+
+if [[ "$CurrentVersion" = "$HIGHESTVERSION" ]]; then
+  echo "Firmwarefetch: No new Firmwareversion found"
+else
+  echo "Firmwarefetch: New firmware version found: "$NewVersion
   BackupCurrentFirmware
   RemoveOlderBackups
   GetNewFirmware
-else
-  echo "Firmwarefetch: No new Firmwareversion found"
 fi
 
 echo "Firmwarefetch: Done!"
