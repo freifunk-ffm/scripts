@@ -14,6 +14,7 @@ BRANCH=${1} # dev, stable, test...
 # Lokalisierungen ab hier
 #####################################
 
+SITE_CODE="ffffm"
 ### 
 # Da der Ablageordner nicht immer identisch zum Fetch- bzw. Download-Link ist,
 # wird hier die Möglichkeit geschaffen, einen unabhängigen Fetch-Teil-Pfad anzugeben.
@@ -93,13 +94,13 @@ mkdir -p  $LOCALBRANCHPATH/sysupgrade/$CurrentVersion
 mkdir -p  $LOCALBRANCHPATH/sysupgrade/$CurrentVersion/modules
 
 # Alle alten Binaries verschieben
-mv $LOCALBRANCHPATH/factory/gluon-ffffm-* $LOCALBRANCHPATH/factory/$CurrentVersion
-mv $LOCALBRANCHPATH/other/gluon-ffffm-* $LOCALBRANCHPATH/other/$CurrentVersion
+mv $LOCALBRANCHPATH/factory/gluon-$SITE_CODE-* $LOCALBRANCHPATH/factory/$CurrentVersion
+mv $LOCALBRANCHPATH/other/gluon-$SITE_CODE-* $LOCALBRANCHPATH/other/$CurrentVersion
 mv $LOCALBRANCHPATH/sysupgrade/*.manifest $LOCALBRANCHPATH/sysupgrade/$CurrentVersion
-mv $LOCALBRANCHPATH/sysupgrade/gluon-ffffm-* $LOCALBRANCHPATH/sysupgrade/$CurrentVersion
+mv $LOCALBRANCHPATH/sysupgrade/gluon-$SITE_CODE-* $LOCALBRANCHPATH/sysupgrade/$CurrentVersion
 # Wenn noch alte FW im Feld läuft, werden die Module an aktuller stelle noch benötigt. 
 # Daher werden die aktuellen Module nur weg kopiert, und nicht komplett verschoben.
-cp -rf $LOCALBRANCHPATH/sysupgrade/modules/gluon-ffffm-$CurrentVersion $LOCALBRANCHPATH/sysupgrade/$CurrentVersion/modules
+cp -rf $LOCALBRANCHPATH/sysupgrade/modules/gluon-$SITE_CODE-$CurrentVersion $LOCALBRANCHPATH/sysupgrade/$CurrentVersion/modules
 
 # Alte Hash- und Info-Files in 'factory' verschieben
 mv $LOCALBRANCHPATH/SHA512* $LOCALBRANCHPATH/factory/$CurrentVersion
