@@ -32,7 +32,6 @@ fi
 
 # Haupt-Link auf Remote-Verzeichnis mit neuer *.tar.xz Firmware-Datei.
 REMOTEPATH="https://2.dl.ffm.freifunk.net/FW-Archiv/ffffm-$DL_PATH_PART/"
-# Babelhack                                     ^^^
 
 # Haupt-Link auf Remote-Verzeichnis, in der sich die Datei der Firmware-Versionsinformation befindet.
 REMOTEVERSIONINFOPATH=${REMOTEPATH}
@@ -125,6 +124,15 @@ find $LOCALBRANCHPATH/sysupgrade/modules -type d -name "gluon-*" -printf "%T@ %T
 ErrorCheck $? "Something went wrong during keeping the module backups!"
 }
 
+CreateModulesSymlinks()
+{
+# Softlink der Module in ein Branch-unabhängiges Verzeichnis
+# (Erster Anpassung, weitere werden folgen...)
+echo "Firmwarefetch: Erstelle Symlinks in ${LOCALMAINPATH}/modules"
+rm -rf ${LOCALMAINPATH}/modules/*${BRANCH}*
+ln -srf ${LOCALBRANCHPATH}/sysupgrade/modules/* ${LOCALMAINPATH}/modules/
+}
+
 GetNewFirmware()
 {
 echo "Firmwarefetch: GetNewFirmware..."
@@ -147,6 +155,7 @@ else
   BackupCurrentFirmware
   RemoveOlderBackups
   GetNewFirmware
+  CreateModulesSymlinks
 fi
 
 echo "Firmwarefetch: Done!"
