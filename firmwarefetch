@@ -92,9 +92,6 @@ mkdir -p  $LOCALBRANCHPATH/other/$CurrentVersion
 mkdir -p  $LOCALBRANCHPATH/sysupgrade/$CurrentVersion
 mkdir -p  $LOCALBRANCHPATH/sysupgrade/$CurrentVersion/modules
 
-mkdir -p  $LOCALMAINPATH/modules
-
-
 # Alle alten Binaries verschieben
 mv $LOCALBRANCHPATH/factory/gluon-$SITE_CODE-* $LOCALBRANCHPATH/factory/$CurrentVersion
 mv $LOCALBRANCHPATH/other/gluon-$SITE_CODE-* $LOCALBRANCHPATH/other/$CurrentVersion
@@ -132,6 +129,7 @@ CreateModulesSymlinks()
 # Softlink der Module in ein Branch-unabhängiges Verzeichnis
 # (Erster Anpassung, weitere werden folgen...)
 echo "Firmwarefetch: Erstelle Symlinks in ${LOCALMAINPATH}/modules"
+mkdir -p  $LOCALMAINPATH/modules
 rm -rf ${LOCALMAINPATH}/modules/*${BRANCH}*
 ln -srf ${LOCALBRANCHPATH}/sysupgrade/modules/* ${LOCALMAINPATH}/modules/
 }
